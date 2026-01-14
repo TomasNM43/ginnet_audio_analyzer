@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Outputs y archivos temporales
+spectrograms/
+spectrograms_time_range/
+spectrograms_jumps/
+resultados_normal/
+temp_image.png
+temp_chart.png
+*.docx
+*.txt
+!requirements.txt
+!BUILD_EXECUTABLE.md
+!README.md
+!INSTALL.md
+
+# PyInstaller
+*.spec
+dist/
+build/
+
+# Archivos de audio y directorios de prueba
+Audio/
+Directorio/
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.rar
+*.zip
+
+# Espectrogramas
+Espectogramas/**/*.png
+
+# Documentos generados
+Documento/**/*.docx
+Documento/**/*.pdf
+
+# Mantenemos solo los modelos best.pt (los last.pt son opcionales)
+!modelos/grayscale/best.pt
+!modelos/normal/best.pt
+modelos/**/last.pt
+
+# Archivos de log
+*.log
+
+# Cache de pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
