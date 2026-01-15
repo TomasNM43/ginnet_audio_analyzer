@@ -26,8 +26,10 @@ pip install pyinstaller
 
 **OPCIÓN B - Carpeta con archivos (RECOMENDADO - funciona mejor con PyTorch):**
 ```powershell
-.\.venv\Scripts\pyinstaller --onedir --windowed --name "GinnetAudioAnalyzer" --add-data "modelos;modelos" --hidden-import=sklearn.utils._typedefs --hidden-import=sklearn.utils._heap --hidden-import=sklearn.utils._sorting --hidden-import=sklearn.utils._vector_sentinel --hidden-import=sklearn.neighbors._partition_nodes --collect-all torch --collect-all torchvision --collect-all ultralytics --collect-all librosa all-in-3.py
+.\.venv\Scripts\pyinstaller --onedir --windowed --noupx --name "GinnetAudioAnalyzer" --add-data "modelos;modelos" --hidden-import=sklearn.utils._typedefs --hidden-import=sklearn.utils._heap --hidden-import=sklearn.utils._sorting --hidden-import=sklearn.utils._vector_sentinel --hidden-import=sklearn.neighbors._partition_nodes --collect-all torch --collect-all torchvision --collect-all ultralytics --collect-all librosa all-in-3.py
 ```
+
+**NOTA:** El flag `--noupx` evita la compresión UPX que puede corromper las DLLs de PyTorch.
 
 ### 3. Resultado
 
@@ -88,13 +90,53 @@ Remove-Item -Path "build" -Recurse -Force
    - `--onefile`: Tarda más (descomprime en temp)
    - `--onedir`: Inicia más rápido
 
-5. **Base deOSError: Error loading DLL" o "WinError 1114"
-**Problema**: Falta Visual C++ Redistributables o PyTorch no se empaquetó bien.
+## Solución de Problemas
 
-**Soluciones**:
-1. **En la PC de destino**, instala: [Visual C++ Redistributables](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Usa `--onedir` en lugar de `--onefile` (más compatible)
-3. Si persiste, agrega `--noupx` al comando de PyInstaller
+### Error: "OSError: [WinError 1114] Error loading c10.dll" o "DLL load failed"
+
+**Problema**: PyTorch no puede cargar sus DLLs nativas. Muy común con `--onefile`.
+
+**Soluciones (en orden de prioridad):**
+
+1. **Regenerar con `--noupx`:**
+   ```powershell
+   # Agregar flag --noupx al comando
+   .\.venv\Scripts\pyinstaller --onedir --windowed --noupx --name "GinnetAudioAnalyzer" ...
+   ```
+
+2. **En la PC de destino, instalar TODAS las versiones de Visual C++ Redistributables:**
+   
+   **Método Automático (PowerShell como Admin):**
+   ```powershell
+   # Visual C++ 2013 x64
+   Invoke-WebRequest -Uri "https://aka.ms/highdpimfc2013x64enu" -OutFile "$env:TEMP\vcredist2013_x64.exe"
+   Start-Process "$env:TEMP\vcredist2013_x64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
+   
+   # Visual C++ 2015-2022 x64
+   Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\vc_redist.x64.exe"
+   Start-Process "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
+   
+   # REINICIAR LA PC después de instalar
+   ```
+   
+   **Método Manual:**
+   - VC++ 2013: https://aka.ms/highdpimfc2013x64enu
+   - VC++ 2015-2022: https://aka.ms/vs/17/release/vc_redist.x64.exe
+   - **IMPORTANTE:** Reiniciar la PC después de instalar
+
+3. **Verificar que se copió TODA la carpeta `dist/GinnetAudioAnalyzer/`:**
+   ```
+   GinnetAudioAnalyzer/
+   ├── GinnetAudioAnalyzer.exe
+   ├── _internal/           ← DEBE existir
+   │   ├── torch/
+   │   │   └── lib/
+   │   │       └── c10.dll  ← Debe estar aquí
+   │   └── ...
+   └── modelos/
+   ```
+
+4. **Usar `--onedir` en lugar de `--onefile`** (la Opción B es más compatible)
 
 ### Error: "No module named..."
 - Verifica que todas las dependencias estén instaladas en el entorno virtual
@@ -120,21 +162,48 @@ Remove-Item -Path "build" -Recurse -Force
 
 **Requisitos para el usuario final:**
 1. Windows 10/11 (64-bit)
-2. [Visual C++ Redistributables](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-3. MySQL instalado y configurado
+2. **Visual C++ Redistributables 2013 y 2015-2022** (ambos son necesarios)
+   - VC++ 2013: https://aka.ms/highdpimfc2013x64enu
+   - VC++ 2015-2022: https://aka.ms/vs/17/release/vc_redist.x64.exe
+3. MySQL instalado y configurado (si usa base de datos)
 4. No necesita Python instalado
 
-Para distribuir la aplicación:
+**IMPORTANTE:** Después de instalar los VC++ Redistributables, REINICIAR la PC.
 
-1. Comprime la carpeta `dist/` completa
-2. Incluye instrucciones para:
-   - Instalación de MySQL si es necesario
-  **USA `--onedir`** (Opción B) para mejor compatibilidad con PyTorch
-- Prueba el ejecutable en un sistema limpio (sin Python) antes de distribuir
-- Mantén una copia del archivo `.spec` para regenerar el ejecutable más rápido
-- Si el ejecutable da errores de DLL, asegúrate de que la PC tenga Visual C++ Redistributables
-- `--onedir` es más grande pero más rápido y confiable que `--onefile`
+## Distribución
+
+## Distribución
+
+**Pasos para distribuir:**
+
+1. Comprime **TODA** la carpeta `dist/GinnetAudioAnalyzer/` (no solo el .exe)
+
+2. Incluye un archivo README.txt con:
+   ```
+   INSTRUCCIONES DE INSTALACIÓN:
+   
+   1. Instalar Visual C++ 2013:
+      https://aka.ms/highdpimfc2013x64enu
+      
+   2. Instalar Visual C++ 2015-2022:
+      https://aka.ms/vs/17/release/vc_redist.x64.exe
+      
+   3. REINICIAR LA PC
+   
+   4. Ejecutar GinnetAudioAnalyzer.exe
+   
+   Si MySQL no está instalado, descargarlo de:
+   https://dev.mysql.com/downloads/installer/
+   ```
+
+3. El ZIP final debe contener:
+   - Carpeta `GinnetAudioAnalyzer/` completa
+   - README.txt con instrucciones
+   - (Opcional) Los instaladores de VC++ incluidos
+
 ## Recomendaciones
+
+- **SIEMPRE usa `--onedir --noupx`** para PyTorch (evita errores de DLL)
 
 - Prueba el ejecutable en un sistema limpio (sin Python) antes de distribuir
 - Mantén una copia del archivo `.spec` para regenerar el ejecutable más rápido
