@@ -19,17 +19,29 @@ pip install pyinstaller
 
 ### 2. Crear el Ejecutable
 
-Ejecutar el siguiente comando desde la raíz del proyecto:
-
+**OPCIÓN A - Un solo archivo (más lento, puede dar errores de DLL):**
 ```powershell
 .\.venv\Scripts\pyinstaller --onefile --windowed --name "GinnetAudioAnalyzer" --add-data "modelos;modelos" --hidden-import=sklearn.utils._typedefs --hidden-import=sklearn.utils._heap --hidden-import=sklearn.utils._sorting --hidden-import=sklearn.utils._vector_sentinel --hidden-import=sklearn.neighbors._partition_nodes --collect-all torch --collect-all torchvision --collect-all ultralytics --collect-all librosa all-in-3.py
 ```
 
+**OPCIÓN B - Carpeta con archivos (RECOMENDADO - funciona mejor con PyTorch):**
+```powershell
+.\.venv\Scripts\pyinstaller --onedir --windowed --name "GinnetAudioAnalyzer" --add-data "modelos;modelos" --hidden-import=sklearn.utils._typedefs --hidden-import=sklearn.utils._heap --hidden-import=sklearn.utils._sorting --hidden-import=sklearn.utils._vector_sentinel --hidden-import=sklearn.neighbors._partition_nodes --collect-all torch --collect-all torchvision --collect-all ultralytics --collect-all librosa all-in-3.py
+```
+
 ### 3. Resultado
 
-El ejecutable se generará en:
+**Con --onefile (Opción A):**
 ```
-dist/GinnetAudioAnalyzer.exe
+dist/GinnetAudioAnalyzer.exe (archivo único)
+```
+
+**Con --onedir (Opción B - RECOMENDADO):**
+```
+dist/GinnetAudioAnalyzer/
+  ├── GinnetAudioAnalyzer.exe (ejecutable principal)
+  ├── _internal/ (librerías y dependencias)
+  └── modelos/ (modelos YOLO)
 ```
 
 ## Explicación de los Parámetros
@@ -62,7 +74,9 @@ Remove-Item -Path "build" -Recurse -Force
 
 ## Notas Importantes
 
-1. **Tamaño del Ejecutable**: El archivo será grande (~500MB - 1GB) debido a las librerías de machine learning incluidas (PyTorch, YOLO, etc.)
+1. **Tamaño del Ejecutable**: 
+   - `--onefile`: ~570MB (archivo único)
+   - `--onedir`: ~1.2GB (carpeta completa, pero inicia más rápido)
 
 2. **Modelos YOLO**: Asegúrate de que la carpeta `modelos/` contiene:
    - `modelos/grayscale/best.pt`
@@ -70,11 +84,17 @@ Remove-Item -Path "build" -Recurse -Force
 
 3. **Antivirus**: Algunos antivirus pueden marcar el ejecutable como sospechoso. Esto es común con PyInstaller.
 
-4. **Primera Ejecución**: La primera vez puede tardar un poco más en iniciar mientras descomprime los recursos.
+4. **Primera Ejecución**: 
+   - `--onefile`: Tarda más (descomprime en temp)
+   - `--onedir`: Inicia más rápido
 
-5. **Base de Datos MySQL**: El ejecutable requiere que MySQL esté instalado y accesible en el sistema donde se ejecute.
+5. **Base deOSError: Error loading DLL" o "WinError 1114"
+**Problema**: Falta Visual C++ Redistributables o PyTorch no se empaquetó bien.
 
-## Solución de Problemas
+**Soluciones**:
+1. **En la PC de destino**, instala: [Visual C++ Redistributables](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+2. Usa `--onedir` en lugar de `--onefile` (más compatible)
+3. Si persiste, agrega `--noupx` al comando de PyInstaller
 
 ### Error: "No module named..."
 - Verifica que todas las dependencias estén instaladas en el entorno virtual
@@ -83,22 +103,37 @@ Remove-Item -Path "build" -Recurse -Force
 ### Ejecutable no inicia
 - Prueba ejecutarlo desde la terminal para ver los errores:
   ```powershell
-  .\dist\GinnetAudioAnalyzer.exe
-  ```
+  .\dist\GinnetAudioAnalyzer
+### Error: "No module named..."
+- Verifica que todas las dependencias estén instaladas en el entorno virtual
+- Agrega el módulo faltante con `--hidden-import=nombre_modulo`
 
-### Falta archivo o recurso
-- Usa `--add-data "origen;destino"` para incluir archivos adicionales
+### Ejecutable no inicia
+- Prueba ejecutarlo desde la terminal para ver los errores:
+  ```powershell
+**Con --onefile:**
+1. Distribuye el archivo `dist/GinnetAudioAnalyzer.exe`
 
-## Distribución
+**Con --onedir (RECOMENDADO):**
+1. Comprime toda la carpeta `dist/GinnetAudioAnalyzer/`
+2. El usuario debe extraer y ejecutar `GinnetAudioAnalyzer.exe`
+
+**Requisitos para el usuario final:**
+1. Windows 10/11 (64-bit)
+2. [Visual C++ Redistributables](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+3. MySQL instalado y configurado
+4. No necesita Python instalado
 
 Para distribuir la aplicación:
 
 1. Comprime la carpeta `dist/` completa
 2. Incluye instrucciones para:
    - Instalación de MySQL si es necesario
-   - Configuración de la base de datos
-   - Requisitos del sistema (Windows 10/11)
-
+  **USA `--onedir`** (Opción B) para mejor compatibilidad con PyTorch
+- Prueba el ejecutable en un sistema limpio (sin Python) antes de distribuir
+- Mantén una copia del archivo `.spec` para regenerar el ejecutable más rápido
+- Si el ejecutable da errores de DLL, asegúrate de que la PC tenga Visual C++ Redistributables
+- `--onedir` es más grande pero más rápido y confiable que `--onefile`
 ## Recomendaciones
 
 - Prueba el ejecutable en un sistema limpio (sin Python) antes de distribuir
