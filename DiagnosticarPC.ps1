@@ -187,8 +187,10 @@ Write-Host ""
 Write-Host "[*] Informacion del sistema..." -ForegroundColor Yellow
 Write-Host ""
 
+$arquitectura = if ([System.Environment]::Is64BitOperatingSystem) { "64-bit" } else { "32-bit" }
+
 Write-Host "  Sistema Operativo: $([System.Environment]::OSVersion.VersionString)" -ForegroundColor Gray
-Write-Host "  Arquitectura: $([System.Environment]::Is64BitOperatingSystem ? '64-bit' : '32-bit')" -ForegroundColor Gray
+Write-Host "  Arquitectura: $arquitectura" -ForegroundColor Gray
 Write-Host "  Version .NET: $([System.Environment]::Version)" -ForegroundColor Gray
 
 Write-Host ""
