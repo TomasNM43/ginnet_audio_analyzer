@@ -203,14 +203,16 @@ Este script automáticamente:
 
 Solo necesitas enviar el archivo ZIP generado (`GinnetAudioAnalyzer-YYYYMMDD-HHMM.zip`).
 
-**Para el usuario final:**
+**Para el usuario final (3 pasos):**
 
 1. Extraer el ZIP
-2. Ejecutar `InstalarDependencias.ps1` (clic derecho → Ejecutar con PowerShell)
-3. Reiniciar la PC cuando termine
-4. Ejecutar `GinnetAudioAnalyzer.exe`
+2. Ejecutar `INSTALAR.ps1` (clic derecho → Ejecutar con PowerShell)
+3. Reiniciar cuando termine (el programa se abre automáticamente)
 
-**¡Sin instalaciones manuales, sin complicaciones!**
+**¡Un instalador único que hace todo!** ✨
+- Instala Visual C++ Redistributables
+- Crea acceso directo en el escritorio
+- Se auto-ejecuta después del reinicio
 
 ---
 

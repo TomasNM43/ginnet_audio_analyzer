@@ -32,6 +32,7 @@ Copy-Item -Path ".\dist\GinnetAudioAnalyzer" -Destination $packageDir -Recurse -
 
 # Copiar archivos de instalación
 Write-Host "📄 Copiando archivos de instalación..." -ForegroundColor Cyan
+Copy-Item -Path ".\INSTALAR.ps1" -Destination $packageDir -Force
 Copy-Item -Path ".\InstalarDependencias.ps1" -Destination $packageDir -Force
 Copy-Item -Path ".\LEEME.txt" -Destination $packageDir -Force
 
@@ -98,13 +99,17 @@ Get-ChildItem -Path $packageDir -Recurse | ForEach-Object {
 }
 
 Write-Host ""
-Write-Host "✅ Listo para distribuir: $zipName" -ForegroundColor Green
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║           ✅ PAQUETE LISTO PARA DISTRIBUIR                ║" -ForegroundColor Green
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
 Write-Host ""
-Write-Host "Los usuarios solo necesitan:" -ForegroundColor Yellow
-Write-Host "  1. Extraer el ZIP" -ForegroundColor White
-Write-Host "  2. Ejecutar InstalarDependencias.ps1" -ForegroundColor White
-Write-Host "  3. Reiniciar la PC" -ForegroundColor White
-Write-Host "  4. Ejecutar GinnetAudioAnalyzer.exe" -ForegroundColor White
+Write-Host "📦 Archivo: $zipName" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "🎯 Los usuarios solo necesitan:" -ForegroundColor Yellow
+Write-Host "   1️⃣  Extraer el ZIP" -ForegroundColor White
+Write-Host "   2️⃣  Ejecutar INSTALAR.ps1 (clic derecho → Ejecutar con PowerShell)" -ForegroundColor White
+Write-Host "   3️⃣  Reiniciar cuando termine" -ForegroundColor White
+Write-Host "   ✨ ¡El programa se abre automáticamente!" -ForegroundColor Green
 Write-Host ""
 
 # Preguntar si eliminar carpeta temporal
