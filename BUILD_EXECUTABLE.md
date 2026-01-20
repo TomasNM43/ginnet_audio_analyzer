@@ -76,25 +76,32 @@ Remove-Item -Path "build" -Recurse -Force
 
 ## Notas Importantes
 
-1. **Tamaño del Ejecutable**: 
+1. **⚠️ IMPORTANTE - Diferencias entre PCs**:
+   - El ejecutable puede funcionar en tu PC de desarrollo pero fallar en otras
+   - Razón: Tu PC tiene instaladas dependencias que otras PCs no tienen
+   - **Solución**: Siempre incluir los instaladores de VC++ Redistributables en la distribución
+
+2. **Tamaño del Ejecutable**: 
    - `--onefile`: ~570MB (archivo único)
    - `--onedir`: ~1.2GB (carpeta completa, pero inicia más rápido)
 
-2. **Modelos YOLO**: Asegúrate de que la carpeta `modelos/` contiene:
+3. **Modelos YOLO**: Asegúrate de que la carpeta `modelos/` contiene:
    - `modelos/grayscale/best.pt`
    - `modelos/normal/best.pt`
 
-3. **Antivirus**: Algunos antivirus pueden marcar el ejecutable como sospechoso. Esto es común con PyInstaller.
+4. **Antivirus**: Algunos antivirus pueden marcar el ejecutable como sospechoso. Esto es común con PyInstaller.
 
-4. **Primera Ejecución**: 
+5. **Primera Ejecución**: 
    - `--onefile`: Tarda más (descomprime en temp)
    - `--onedir`: Inicia más rápido
 
 ## Solución de Problemas
 
-### Error: "OSError: [WinError 1114] Error loading c10.dll" o "DLL load failed"
+### ⚠️ Error: "OSError: [WinError 1114] Error loading c10.dll" o "DLL load failed"
 
-**Problema**: PyTorch no puede cargar sus DLLs nativas. Muy común con `--onefile`.
+**Problema**: El ejecutable funciona en tu PC pero falla en otras PCs con error de carga de DLL de PyTorch.
+
+**¿Por qué ocurre?** Tu PC de desarrollo tiene instaladas dependencias del sistema (Visual C++ Redistributables, DLLs de desarrollo) que la PC de destino no tiene.
 
 **Soluciones (en orden de prioridad):**
 
@@ -104,19 +111,22 @@ Remove-Item -Path "build" -Recurse -Force
    .\.venv\Scripts\pyinstaller --onedir --windowed --noupx --name "GinnetAudioAnalyzer" ...
    ```
 
-2. **En la PC de destino, instalar TODAS las versiones de Visual C++ Redistributables:**
+2. **⭐ SOLUCIÓN INMEDIATA: Instalar Visual C++ Redistributables en la PC de destino**
+   
+   **Esta es la solución más rápida si el ejecutable ya está compilado.**
    
    **Método Automático (PowerShell como Admin):**
    ```powershell
-   # Visual C++ 2013 x64
+   # Visual C++ 2013 x64 (OBLIGATORIO para c10.dll)
    Invoke-WebRequest -Uri "https://aka.ms/highdpimfc2013x64enu" -OutFile "$env:TEMP\vcredist2013_x64.exe"
    Start-Process "$env:TEMP\vcredist2013_x64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
    
-   # Visual C++ 2015-2022 x64
+   # Visual C++ 2015-2022 x64 (OBLIGATORIO para torch)
    Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\vc_redist.x64.exe"
    Start-Process "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install", "/quiet", "/norestart" -Wait
    
-   # REINICIAR LA PC después de instalar
+   # REINICIAR LA PC (OBLIGATORIO)
+   Restart-Computer
    ```
    
    **Método Manual:**
@@ -174,32 +184,51 @@ Remove-Item -Path "build" -Recurse -Force
 
 ## Distribución
 
-**Pasos para distribuir:**
+### ⭐ Método Automático (RECOMENDADO)
+
+**Paso 1: Preparar el paquete completo**
+
+```powershell
+.\PrepararDistribucion.ps1
+```
+
+Este script automáticamente:
+- ✅ Copia el ejecutable completo
+- ✅ Descarga los instaladores de Visual C++
+- ✅ Incluye el instalador automático
+- ✅ Crea instrucciones claras (LEEME.txt)
+- ✅ Empaqueta todo en un ZIP listo para distribuir
+
+**Paso 2: Distribuir**
+
+Solo necesitas enviar el archivo ZIP generado (`GinnetAudioAnalyzer-YYYYMMDD-HHMM.zip`).
+
+**Para el usuario final:**
+
+1. Extraer el ZIP
+2. Ejecutar `InstalarDependencias.ps1` (clic derecho → Ejecutar con PowerShell)
+3. Reiniciar la PC cuando termine
+4. Ejecutar `GinnetAudioAnalyzer.exe`
+
+**¡Sin instalaciones manuales, sin complicaciones!**
+
+---
+
+### Método Manual (alternativo)
+
+Si prefieres crear el paquete manualmente:
 
 1. Comprime **TODA** la carpeta `dist/GinnetAudioAnalyzer/` (no solo el .exe)
 
-2. Incluye un archivo README.txt con:
-   ```
-   INSTRUCCIONES DE INSTALACIÓN:
-   
-   1. Instalar Visual C++ 2013:
-      https://aka.ms/highdpimfc2013x64enu
-      
-   2. Instalar Visual C++ 2015-2022:
-      https://aka.ms/vs/17/release/vc_redist.x64.exe
-      
-   3. REINICIAR LA PC
-   
-   4. Ejecutar GinnetAudioAnalyzer.exe
-   
-   Si MySQL no está instalado, descargarlo de:
-   https://dev.mysql.com/downloads/installer/
-   ```
+2. Descarga los instaladores de VC++:
+   - VC++ 2013: https://aka.ms/highdpimfc2013x64enu
+   - VC++ 2015-2022: https://aka.ms/vs/17/release/vc_redist.x64.exe
 
 3. El ZIP final debe contener:
    - Carpeta `GinnetAudioAnalyzer/` completa
-   - README.txt con instrucciones
-   - (Opcional) Los instaladores de VC++ incluidos
+   - `InstalarDependencias.ps1`
+   - `LEEME.txt`
+   - Carpeta `instaladores/` con los archivos .exe de VC++
 
 ## Recomendaciones
 
